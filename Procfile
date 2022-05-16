@@ -1,1 +1,1 @@
-web: python3 anon_bot.py
+web python3 anon_bot.py
