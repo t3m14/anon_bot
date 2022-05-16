@@ -2,6 +2,25 @@ from aiogram import types, Dispatcher, Bot, executor
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
+import os
+
+
+BOT_TOKEN = os.getenv('BOT_TOKEN')
+if not BOT_TOKEN:
+    print('You have forgot to set BOT_TOKEN')
+    quit()
+
+HEROKU_APP_NAME = os.getenv('HEROKU_APP_NAME')
+
+
+# webhook settings
+WEBHOOK_HOST = f'https://{HEROKU_APP_NAME}.herokuapp.com'
+WEBHOOK_PATH = f'/webhook/{BOT_TOKEN}'
+WEBHOOK_URL = f'{WEBHOOK_HOST}{WEBHOOK_PATH}'
+
+# webserver settings
+WEBAPP_HOST = '0.0.0.0'
+WEBAPP_PORT = int(os.getenv('PORT'))
 token = "5391154786:AAEwey2Gcr4EnWev8oEyqOSbNOVmpTPz0tE"
 admin_id = "2132310485"
 storage = MemoryStorage()
@@ -9,6 +28,10 @@ storage = MemoryStorage()
 bot = Bot(token=token)
 
 dp = Dispatcher(bot, storage=storage)
+
+async def on_startup(dp):
+    await bot.set_webhook(WEBHOOK_URL,drop_pending_updates=True)
+
 
 class States(StatesGroup):
     start = State()
@@ -36,4 +59,12 @@ async def waiting(message: types.Message):
 
 
 if __name__ == '__main__':
+    executor.start_webhook(
+        dispatcher=dp,
+        webhook_path=WEBHOOK_PATH,
+        skip_updates=True,
+        on_startup=on_startup,
+        host=WEBAPP_HOST,
+        port=WEBAPP_PORT,
+    )
     executor.start_polling(dp, skip_updates=True)
