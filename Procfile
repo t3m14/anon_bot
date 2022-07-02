@@ -1,1 +1,1 @@
-web python3 whotfiam.py
+web python3 anon_bot.py
